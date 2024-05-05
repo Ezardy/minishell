@@ -30,13 +30,13 @@ $(build_dir):
 clean :
 	rm -rf $(build_dir)
 	make -C $(libft_dir) clean
-	make -C $(readline_dir) clean
+	-make -C $(readline_dir) clean
 
 fclean : clean
 	make -C $(libft_dir) fclean
 	rm -f $(name)
-	make -C $(readline_dir) uninstall
-	make -C $(readline_dir) distclean
+	-make -C $(readline_dir) uninstall
+	-make -C $(readline_dir) distclean
 
 re : fclean all
 

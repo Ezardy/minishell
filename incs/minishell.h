@@ -6,7 +6,7 @@
 /*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 18:44:22 by mamazari          #+#    #+#             */
-/*   Updated: 2024/05/04 18:04:40 by zanikin          ###   ########.fr       */
+/*   Updated: 2024/05/05 16:53:24 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ typedef struct s_args
 	char	**argv;
 	char	**envp;
 	int		p_count;
-}		t_args;
+}	t_args;
 
 void	pipex(t_args args, int fd[]);
 void	do_execve_first(t_args args, int fd[]);
