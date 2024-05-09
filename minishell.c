@@ -6,7 +6,7 @@
 /*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/28 10:55:29 by mamazari          #+#    #+#             */
-/*   Updated: 2024/05/09 17:21:24 by zanikin          ###   ########.fr       */
+/*   Updated: 2024/05/09 18:03:08 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 int			is_builtin(char *str);
 int			is_cmd(char *str);
 void		do_execve_red(char *strs, char **envp, int file);
-int			create_fd(char *name);
 int			pipe_count(char *str);
 static void	sigact_handler(int signum, siginfo_t *info, void *context);
 
@@ -28,12 +27,9 @@ int	main(int argc, char **argv, char **envp)
 {
 	char				*str;
 	char				**words1;
-	char				*command;
-	char				**splitted;
-	int					j;
 	int					i;
 	int					p_count;
-	t_args				args;
+	t_pipex				args;
 	int					*fd;
 	struct sigaction	sa;
 	int					exit_status;
@@ -48,13 +44,11 @@ int	main(int argc, char **argv, char **envp)
 		str = readline("minishell$ ");
 		if (ft_strlen(str) > 0)
 			add_history(str);
-		j = 0;
 		words1 = my_split(str, "|");
 		args.argv = words1;
 		p_count = pipe_count(str);
 		args.p_count = p_count;
 		fd = (int *) malloc(sizeof(int) * (p_count * 2));
-		j = 0;
 		i = 0;
 		while (i < p_count)
 		{
@@ -67,7 +61,6 @@ int	main(int argc, char **argv, char **envp)
 		free(fd);
 		free_arr(args.argv);
 		free(str);
-		printf("exit status: %d\n", exit_status);
 	}
 }
 
@@ -78,7 +71,7 @@ static void	sigact_handler(int signum, siginfo_t *info, void *context)
 	sa_code = signum;
 }
 
-void	do_execve(t_args arg)
+void	do_execve(t_pipex arg)
 {
 	char	**av;
 	char	*command;
@@ -115,28 +108,4 @@ void	do_execve_red(char *strs, char **envp, int file)
 			exit(1);
 		}
 	}
-}
-
-int	create_fd(char *name)
-{
-	int	fd;
-
-	fd = open(name, O_RDWR | O_CREAT | O_TRUNC, 0644);
-	return (fd);
-}
-
-int	pipe_count(char *str)
-{
-	int	i;
-	int	c;
-
-	i = 0;
-	c = 0;
-	while (str[i])
-	{
-		if (str[i] == '|')
-			c++;
-		i++;
-	}
-	return (c);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   helper_functions2.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamazari <mamazari@student.42.fr>          +#+  +:+       +#+        */
+/*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/14 15:13:06 by mamazari          #+#    #+#             */
-/*   Updated: 2024/05/09 16:56:17 by mamazari         ###   ########.fr       */
+/*   Updated: 2024/05/09 17:53:36 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ void	close_all(int fd[], int argc)
 	}
 }
 
-int	do_execve_first(t_args args, int fd[])
+int	do_execve_first(t_pipex args, int fd[])
 {
 	char	**av;
 	char	*command;
@@ -100,11 +100,11 @@ int	do_execve_first(t_args args, int fd[])
 	return (exit_status);
 }
 
-void	do_execve_fd(t_args args, int fd[], int *i, int *j)
+void	do_execve_fd(t_pipex args, int fd[], int *i, int *j)
 {
 	char	**av;
 	char	*command;
-	
+
 	av = ft_split(args.argv[*j], ' ');
 	dup2(fd[*i], 0);
 	dup2(fd[*i + 3], 1);
@@ -128,7 +128,7 @@ void	do_execve_fd(t_args args, int fd[], int *i, int *j)
 	exit(0);
 }
 
-int	do_execve_last(t_args args, int fd[], int *i)
+int	do_execve_last(t_pipex args, int fd[], int *i)
 {
 	char	**av;
 	char	*command;
@@ -136,7 +136,7 @@ int	do_execve_last(t_args args, int fd[], int *i)
 	int		exit_status;
 	int		status;
 	int		ret;
-	
+
 	exit_status = 0;
 	ret = 0;
 	p = fork();

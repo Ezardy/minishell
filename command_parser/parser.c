@@ -6,7 +6,7 @@
 /*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/05 16:03:18 by zanikin           #+#    #+#             */
-/*   Updated: 2024/05/09 16:34:07 by zanikin          ###   ########.fr       */
+/*   Updated: 2024/05/09 18:03:09 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,11 @@ static int	exec_continuation(const char *str, size_t len, int prev_op)
 		else
 			error = exec_cmd(str, len);
 	}
+}
+
+int	exec_cmd(const char *cmd, size_t len)
+{
+
 }
 
 static int	exec_continuation_order(const char *str, size_t len,

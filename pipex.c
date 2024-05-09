@@ -3,23 +3,25 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamazari <mamazari@student.42.fr>          +#+  +:+       +#+        */
+/*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/23 15:21:23 by mamazari          #+#    #+#             */
-/*   Updated: 2024/05/09 16:19:04 by mamazari         ###   ########.fr       */
+/*   Updated: 2024/05/09 17:57:53 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "incs/minishell.h"
+#include "minishell.h"
 
-int	pipex(t_args args, int fd[])
+static int	pipe_count(char *str);
+
+int	pipex(t_pipex args, int fd[])
 {
 	int	i;
 	int	j;
 	int	p;
 	int	status;
 	int	exit_status;
-	
+
 	if (args.p_count == 0)
 		exit_status = do_execve_first(args, fd);
 	else
@@ -39,28 +41,18 @@ int	pipex(t_args args, int fd[])
 	return (exit_status);
 }
 
-// int	main(int argc, char **argv, char **envp)
-// {
-// 	t_args	args;
-// 	int		*fd;
-// 	int		i;
-// 	int		j;
+static int	pipe_count(char *str)
+{
+	int	i;
+	int	c;
 
-// 	args.argc = argc;
-// 	args.argv = argv;
-// 	args.envp = envp;
-// 	fd = (int *) malloc(sizeof(int) * ((argc - 1) * 2 - 2));
-// 	j = 0;
-// 	i = 0;
-// 	while (i < (argc - 1) * 2 - 2)
-// 	{
-// 		pipe(fd + j);
-// 		j += 2;
-// 		i++;
-// 	}
-// 	pipex(args, fd);
-// 	close_all(fd, argc);
-// 	free(fd);
-// 	leave_children();
-// 	return (0);
-// }
+	i = 0;
+	c = 0;
+	while (str[i])
+	{
+		if (str[i] == '|')
+			c++;
+		i++;
+	}
+	return (c);
+}
