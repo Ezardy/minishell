@@ -6,7 +6,7 @@
 /*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/05 16:36:17 by zanikin           #+#    #+#             */
-/*   Updated: 2024/05/05 17:32:13 by zanikin          ###   ########.fr       */
+/*   Updated: 2024/05/08 19:06:31 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,27 +15,18 @@
 # include <sys/types.h>
 # include "libft.h"
 
-# define MS_STR 0
-# define MS_AND 1
-# define MS_OR 2
-# define MS_PIPE 3
-# define MS_REDINP 4
-# define MS_REDOUT 5
+# define MSE_OP_PAR 423
+# define MSE_NO_OR_OP2 424
+# define MSE_NO_OR_OP1 425
+# define MSE_NO_AND_OP2 426
+# define MSE_NO_AND_OP1 427
+# define MSE_EM_PAR 428
 
-typedef struct s_token
-{
-	char	*t;
-	size_t	l;
-}	t_token;
+# define MSPO_NONE 0
+# define MSPO_OR 1
+# define MSPO_AND 2
 
-typedef struct s_btree
-{
-	struct s_btree	*l;
-	struct s_btree	*r;
-	int				op;
-	t_token			*t;
-}	t_btree;
+int	exec_cmd_str(const char *str, size_t len, int prev_op);
+int	exec_cmd(const char *cmd, size_t len);
 
-t_btree	*btree_new(void *content);
-void	btreenode_add(t_btree *node, void *left, void *right);
 #endif
