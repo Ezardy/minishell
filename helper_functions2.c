@@ -6,7 +6,7 @@
 /*   By: mamazari <mamazari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/14 15:13:06 by mamazari          #+#    #+#             */
-/*   Updated: 2024/05/04 18:36:00 by mamazari         ###   ########.fr       */
+/*   Updated: 2024/05/09 16:56:17 by mamazari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,64 +64,107 @@ void	close_all(int fd[], int argc)
 	}
 }
 
-void	do_execve_first(t_args args, int fd[])
+int	do_execve_first(t_args args, int fd[])
 {
 	char	**av;
 	char	*command;
+	int		exit_status;
+	int		status;
 
+	exit_status = 0;
 	if (fork() == 0)
 	{
-		av = ft_split(args.argv[0], ' ');
-		command = search_path(av[0], args.envp);
 		dup2(fd[1], 1);
 		close_all(fd, args.p_count);
-		if (execve(command, av, args.envp) == -1)
+		av = ft_split(args.argv[0], ' ');
+		if (av[0][0] == '/' || (av[0][0] == '.' && av[0][1] == '/'))
 		{
-			perror("execve");
-			exit(0);
+			command = av[0];
+			execve(command, av, args.envp);
+			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd(command, 2);
+			ft_putstr_fd(": No such file or directory\n", 2);
 		}
+		else
+		{
+			command = search_path(av[0], args.envp);
+			execve(command, av, args.envp);
+			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd(command, 2);
+			ft_putstr_fd(": command not found\n", 2);
+		}
+		exit(127);
 	}
+	wait(&status);
+	exit_status = WEXITSTATUS(status);
+	return (exit_status);
 }
 
 void	do_execve_fd(t_args args, int fd[], int *i, int *j)
 {
 	char	**av;
 	char	*command;
-
+	
 	av = ft_split(args.argv[*j], ' ');
-	command = search_path(av[0], args.envp);
 	dup2(fd[*i], 0);
 	dup2(fd[*i + 3], 1);
 	close_all(fd, args.p_count);
-	if (execve(command, av, args.envp) == -1)
+	if (av[0][0] == '/' || (av[0][0] == '.' && av[0][1] == '/'))
 	{
-		perror("execve");
-		exit(0);
+		command = av[0];
+		execve(command, av, args.envp);
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd(command, 2);
+		ft_putstr_fd(": No such file or directory\n", 2);
 	}
+	else
+	{
+		command = search_path(av[0], args.envp);
+		execve(command, av, args.envp);
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd(command, 2);
+		ft_putstr_fd(": command not found\n", 2);
+	}
+	exit(0);
 }
 
-void	do_execve_last(t_args args, int fd[], int *i)
+int	do_execve_last(t_args args, int fd[], int *i)
 {
 	char	**av;
 	char	*command;
 	int		p;
-
+	int		exit_status;
+	int		status;
+	int		ret;
+	
+	exit_status = 0;
+	ret = 0;
 	p = fork();
 	if (p == 0)
 	{
-		av = ft_split(args.argv[args.p_count], ' ');
-		command = search_path(av[0], args.envp);
 		dup2(fd[*i], 0);
 		close_all(fd, args.p_count);
-		if (execve(command, av, args.envp) == -1)
+		av = ft_split(args.argv[args.p_count], ' ');
+		if (av[0][0] == '/' || (av[0][0] == '.' && av[0][1] == '/'))
 		{
-			perror("execve");
-			exit(0);
+			command = av[0];
+			ret = execve(command, av, args.envp);
+			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd(command, 2);
+			ft_putstr_fd(": No such file or directory\n", 2);
+			exit(127);
+		}
+		else
+		{
+			command = search_path(av[0], args.envp);
+			ret = execve(command, av, args.envp);
+			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd(command, 2);
+			ft_putstr_fd(": command not found\n", 2);
+			exit(1);
 		}
 	}
-	else if (p == -1)
-	{
-		perror("fork");
-		exit(0);
-	}
+	wait(&status);
+	exit_status = WEXITSTATUS(status);
+	return (exit_status);
 }

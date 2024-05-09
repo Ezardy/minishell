@@ -6,7 +6,7 @@
 /*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/28 10:55:29 by mamazari          #+#    #+#             */
-/*   Updated: 2024/05/09 15:13:35 by zanikin          ###   ########.fr       */
+/*   Updated: 2024/05/09 17:21:24 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ int	main(int argc, char **argv, char **envp)
 	t_args				args;
 	int					*fd;
 	struct sigaction	sa;
+	int					exit_status;
 
 	sigemptyset(&sa.sa_mask);
 	sa.sa_sigaction = sigact_handler;
@@ -52,23 +53,21 @@ int	main(int argc, char **argv, char **envp)
 		args.argv = words1;
 		p_count = pipe_count(str);
 		args.p_count = p_count;
-		if (args.p_count != 0)
+		fd = (int *) malloc(sizeof(int) * (p_count * 2));
+		j = 0;
+		i = 0;
+		while (i < p_count)
 		{
-			fd = (int *) malloc(sizeof(int) * (p_count * 2));
-			j = 0;
-			i = 0;
-			while (i < p_count)
-			{
-				pipe(fd + i * 2);
-				i++;
-			}
-			pipex(args, fd);
-			close_all(fd, args.p_count);
-			leave_children();
-			free(fd);
+			pipe(fd + i * 2);
+			i++;
 		}
-		free_arr(words1);
+		exit_status = pipex(args, fd);
+		close_all(fd, args.p_count);
+		leave_children();
+		free(fd);
+		free_arr(args.argv);
 		free(str);
+		printf("exit status: %d\n", exit_status);
 	}
 }
 
@@ -79,33 +78,25 @@ static void	sigact_handler(int signum, siginfo_t *info, void *context)
 	sa_code = signum;
 }
 
-int	is_builtin(char *str)
+void	do_execve(t_args arg)
 {
-	int	i;
-	int	ans;
+	char	**av;
+	char	*command;
 
-	i = 0;
-	ans = 0;
-	char	*buf[] = {"echo", "cd", "pwd", "export", "unset", "env", "exit", NULL};
-	while (buf[i] != NULL)
+	if (fork() == 0)
 	{
-		if (ft_strncmp(str, buf[i], ft_strlen(buf[i])) == 0)
-			ans = 1;
-		i++;
+		av = ft_split(arg.argv[0], ' ');
+		if (av[0][0] == '/' || (av[0][0] == '.' && av[0][1] == '/'))
+			command = av[0];
+		else
+			command = search_path(av[0], arg.envp);
+		if (execve(command, av, arg.envp) == -1)
+		{
+			perror(command);
+			exit(1);
+		}
 	}
-	return (ans);
-}
-
-int	is_cmd(char *str)
-{
-	int	i;
-	int	ans;
-
-	i = 0;
-	ans = 0;
-	if (access(str, F_OK | R_OK) == 0 || is_builtin(str) == 1)
-		ans = 1;
-	return (ans);
+	wait(NULL);
 }
 
 void	do_execve_red(char *strs, char **envp, int file)

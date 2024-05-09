@@ -6,7 +6,7 @@
 /*   By: mamazari <mamazari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/23 15:21:01 by mamazari          #+#    #+#             */
-/*   Updated: 2024/05/03 14:04:35 by mamazari         ###   ########.fr       */
+/*   Updated: 2024/05/09 15:18:47 by mamazari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,9 @@ char	*get_str(char **strs2, char *cmd)
 {
 	char	*str;
 	int		i;
-
+	int		errnum;
+	char	*s;
+	
 	i = 0;
 	while (strs2[i] != NULL)
 	{
@@ -48,5 +50,5 @@ char	*get_str(char **strs2, char *cmd)
 		free(str);
 	}
 	free_arr(strs2);
-	return (NULL);
+	return ("l");
 }

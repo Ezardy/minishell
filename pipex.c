@@ -6,19 +6,24 @@
 /*   By: mamazari <mamazari@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/23 15:21:23 by mamazari          #+#    #+#             */
-/*   Updated: 2024/05/04 17:42:57 by mamazari         ###   ########.fr       */
+/*   Updated: 2024/05/09 16:19:04 by mamazari         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "incs/minishell.h"
 
-void	pipex(t_args args, int fd[])
+int	pipex(t_args args, int fd[])
 {
 	int	i;
 	int	j;
 	int	p;
-
-	do_execve_first(args, fd);
+	int	status;
+	int	exit_status;
+	
+	if (args.p_count == 0)
+		exit_status = do_execve_first(args, fd);
+	else
+		do_execve_first(args, fd);
 	j = 1;
 	i = 0;
 	while (j < args.p_count)
@@ -29,7 +34,9 @@ void	pipex(t_args args, int fd[])
 		j++;
 		i += 2;
 	}
-	do_execve_last(args, fd, &i);
+	if (args.p_count > 0)
+		exit_status = do_execve_last(args, fd, &i);
+	return (exit_status);
 }
 
 // int	main(int argc, char **argv, char **envp)
