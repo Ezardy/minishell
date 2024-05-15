@@ -6,15 +6,44 @@
 /*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/23 15:21:23 by mamazari          #+#    #+#             */
-/*   Updated: 2024/05/09 17:57:53 by zanikin          ###   ########.fr       */
+/*   Updated: 2024/05/10 19:57:31 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 static int	pipe_count(char *str);
+static int	pipex_exec(t_pipex args, int fd[]);
+static void	do_execve_red(char *strs, char **envp, int file);
 
-int	pipex(t_pipex args, int fd[])
+int	pipex(const char *str, char **envp)
+{
+	t_pipex	args;
+	int		p_count;
+	int		*fd;
+	int		i;
+	int		exit_status;
+
+	args.envp = envp;
+	args.argv = my_split(str, "|");
+	p_count = pipe_count(str);
+	args.p_count = p_count;
+	fd = (int *) malloc(sizeof(int) * (p_count * 2));
+	i = 0;
+	while (i < p_count)
+	{
+		pipe(fd + i * 2);
+		i++;
+	}
+	exit_status = pipex_exec(args, fd);
+	close_all(fd, args.p_count);
+	leave_children();
+	free(fd);
+	free_arr(args.argv);
+	return (exit_status);
+}
+
+static int	pipex_exec(t_pipex args, int fd[])
 {
 	int	i;
 	int	j;
@@ -55,4 +84,22 @@ static int	pipe_count(char *str)
 		i++;
 	}
 	return (c);
+}
+
+static void	do_execve_red(char *strs, char **envp, int file)
+{
+	char	**av;
+	char	*command;
+
+	if (fork() == 0)
+	{
+		av = ft_split(strs, ' ');
+		command = search_path(av[0], envp);
+		dup2(file, 1);
+		if (execve(command, av, envp) == -1)
+		{
+			perror("execve");
+			exit(1);
+		}
+	}
 }

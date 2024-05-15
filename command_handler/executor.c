@@ -1,23 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parser.c                                           :+:      :+:    :+:   */
+/*   executor.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/05 16:03:18 by zanikin           #+#    #+#             */
-/*   Updated: 2024/05/09 18:03:09 by zanikin          ###   ########.fr       */
+/*   Updated: 2024/05/15 15:20:08 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "command_parser.h"
+#include "command_handler.h"
 
 static char	*ft_strrnchr(const char *str, char c, size_t len);
 static int	exec_continuation_order(const char *str, size_t len,
 				const char *lop, int is_or);
-static int	exec_continuation(const char *str, size_t len, int prev_op);
+static int	exec_continuation(const char *str, size_t len, int prev_op,
+				t_qlist *qt);
 
-int	exec_cmd_str(const char *str, size_t len, int prev_op)
+int	exec_cmd_str(const char *str, size_t len, int prev_op, t_qlist *qt)
 {
 	char	*par2;
 	int		error;
@@ -31,18 +32,19 @@ int	exec_cmd_str(const char *str, size_t len, int prev_op)
 	{
 		par2 = ft_strrnchr(str, ')', len);
 		if (par2 && par2 - str > 1)
-			error = exec_cmd_str(str + 1, par2 - str - 1, MSPO_NONE);
+			error = exec_cmd_str(str + 1, par2 - str - 1, MSPO_NONE, qt);
 		else if (par2)
 			error = MSE_EM_PAR;
 		else
 			error = MSE_OP_PAR;
 	}
 	else
-		error = exec_continuation(str, len, prev_op);
+		error = exec_continuation(str, len, prev_op, qt);
 	return (error);
 }
 
-static int	exec_continuation(const char *str, size_t len, int prev_op)
+static int	exec_continuation(const char *str, size_t len, int prev_op,
+				t_qlist *qt)
 {
 	char	*and;
 	char	*or;
@@ -66,11 +68,15 @@ static int	exec_continuation(const char *str, size_t len, int prev_op)
 		else
 			error = exec_cmd(str, len);
 	}
+	return (error);
 }
+
+#include <stdio.h>
 
 int	exec_cmd(const char *cmd, size_t len)
 {
-
+	printf("exec: %.*s\n", len, cmd);
+	return (0);
 }
 
 static int	exec_continuation_order(const char *str, size_t len,
