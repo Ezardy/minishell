@@ -18,6 +18,7 @@ static int			exec_continuation_order(t_string *str, const char *lop,
 						int prev_op, t_qlist *qt);
 static int			exec_continuation(t_string *str, int prev_op,
 						t_qlist *qt);
+static size_t		skip_spaces(const char **pstr);
 
 int	exec_cmd_str(const char *str, size_t len, int prev_op, t_qlist *qt)
 {
@@ -26,17 +27,17 @@ int	exec_cmd_str(const char *str, size_t len, int prev_op, t_qlist *qt)
 	t_string	substr;
 
 	error = 0;
-	while (str[0] == ' ')
-	{
-		str++;
-		len--;
-	}
+	len -= skip_spaces(&str);
 	if (str[0] == '(')
 	{
 		par2 = ft_strrnchr(str, ')', len);
 		error = MSE_OP_PAR;
 		if (par2 && par2 - str > 1)
+		{
 			error = exec_cmd_str(str + 1, (par2 - str) - 1, MSPO_NONE, qt);
+			str = par2 + 1;
+			len -= par2 - str + 1;
+		}
 		else if (par2)
 			error = MSE_EM_PAR;
 		prev_op = MSPO_PAR | error;
@@ -46,6 +47,19 @@ int	exec_cmd_str(const char *str, size_t len, int prev_op, t_qlist *qt)
 	if (str[0] && (error < MSE_OP_PAR || error > MSE_NO_CTRL))
 		error = exec_continuation(&substr, prev_op, qt);
 	return (error);
+}
+
+static size_t	skip_spaces(const char **pstr)
+{
+	size_t	skiped;
+
+	skiped = 0;
+	while (pstr[0][0] == ' ')
+	{
+		skiped++;
+		pstr[0]++;
+	}
+	return (skiped);
 }
 
 static int	exec_continuation(t_string *str, int prev_op, t_qlist *qt)
@@ -58,9 +72,9 @@ static int	exec_continuation(t_string *str, int prev_op, t_qlist *qt)
 	or = ft_strnstr(str->s, "||", str->l);
 	if (and && !get_cor_quotes(and, qt) && (!or || get_cor_quotes(or, qt)
 			|| and < or))
-		error = exec_continuation_order(str, and, qt);
+		error = exec_continuation_order(str, and, prev_op, qt);
 	else if (or && !get_cor_quotes(or, qt))
-		error = exec_continuation_order(str, or, qt);
+		error = exec_continuation_order(str, or, prev_op, qt);
 	else
 	{
 		if (str->s[0] == '\0')
@@ -84,9 +98,12 @@ static int	exec_continuation_order(t_string *str, const char *lop, int prev_op,
 
 	error = (str->s == lop) * ((*lop == '|') * MSE_NO_OR_OP1
 			+ (*lop == '&') * MSE_NO_AND_OP1);
-	if (!error)
+	if (!error || prev_op & MSPO_PAR)
 	{
-		tmp_error = exec_cmd(str->s, lop - str->s, qt);
+		if (prev_op & MSPO_PAR)
+			tmp_error = prev_op ^ MSPO_PAR;
+		else
+			tmp_error = exec_cmd(str->s, lop - str->s, qt);
 		if (*lop == '&' && tmp_error || *lop == '|' && !tmp_error)
 			error = tmp_error;
 		else

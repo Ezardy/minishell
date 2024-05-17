@@ -52,7 +52,7 @@ int	main(int argc, char **argv, char **envp)
 int	exec_cmd(const char *cmd, size_t len, t_qlist *qt)
 {
 	(void)qt;
-	printf("exec: %.*s\n", len, cmd);
+	printf("exec: %.*s\n", (int)len, cmd);
 	return (0);
 }
 
