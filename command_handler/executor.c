@@ -6,23 +6,26 @@
 /*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/05 16:03:18 by zanikin           #+#    #+#             */
-/*   Updated: 2024/05/15 15:20:08 by zanikin          ###   ########.fr       */
+/*   Updated: 2024/05/17 18:43:43 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "command_handler.h"
+#include "libft.h"
 
-static char	*ft_strrnchr(const char *str, char c, size_t len);
-static int	exec_continuation_order(const char *str, size_t len,
-				const char *lop, int is_or);
-static int	exec_continuation(const char *str, size_t len, int prev_op,
-				t_qlist *qt);
+static const char	*ft_strrnchr(const char *str, char c, size_t len);
+static int			exec_continuation_order(t_string *str, const char *lop,
+						int prev_op, t_qlist *qt);
+static int			exec_continuation(t_string *str, int prev_op,
+						t_qlist *qt);
 
 int	exec_cmd_str(const char *str, size_t len, int prev_op, t_qlist *qt)
 {
-	char	*par2;
-	int		error;
+	const char	*par2;
+	int			error;
+	t_string	substr;
 
+	error = 0;
 	while (str[0] == ' ')
 	{
 		str++;
@@ -31,34 +34,36 @@ int	exec_cmd_str(const char *str, size_t len, int prev_op, t_qlist *qt)
 	if (str[0] == '(')
 	{
 		par2 = ft_strrnchr(str, ')', len);
+		error = MSE_OP_PAR;
 		if (par2 && par2 - str > 1)
-			error = exec_cmd_str(str + 1, par2 - str - 1, MSPO_NONE, qt);
+			error = exec_cmd_str(str + 1, (par2 - str) - 1, MSPO_NONE, qt);
 		else if (par2)
 			error = MSE_EM_PAR;
-		else
-			error = MSE_OP_PAR;
+		prev_op = MSPO_PAR | error;
 	}
-	else
-		error = exec_continuation(str, len, prev_op, qt);
+	substr.l = len;
+	substr.s = str;
+	if (str[0] && (error < MSE_OP_PAR || error > MSE_NO_CTRL))
+		error = exec_continuation(&substr, prev_op, qt);
 	return (error);
 }
 
-static int	exec_continuation(const char *str, size_t len, int prev_op,
-				t_qlist *qt)
+static int	exec_continuation(t_string *str, int prev_op, t_qlist *qt)
 {
 	char	*and;
 	char	*or;
 	int		error;
 
-	and = ft_strnstr(str, "&&", len);
-	or = ft_strnstr(str, "||", len);
-	if (and && (!or || and < or))
-		error = exec_continuation_order(str, len, and, 0);
-	else if (or)
-		error = exec_continuation_order(str, len, or, 1);
+	and = ft_strnstr(str->s, "&&", str->l);
+	or = ft_strnstr(str->s, "||", str->l);
+	if (and && !get_cor_quotes(and, qt) && (!or || get_cor_quotes(or, qt)
+			|| and < or))
+		error = exec_continuation_order(str, and, qt);
+	else if (or && !get_cor_quotes(or, qt))
+		error = exec_continuation_order(str, or, qt);
 	else
 	{
-		if (str[0] == '\0')
+		if (str->s[0] == '\0')
 		{
 			if (prev_op == MSPO_OR)
 				error = MSE_NO_OR_OP2;
@@ -66,41 +71,34 @@ static int	exec_continuation(const char *str, size_t len, int prev_op,
 				error = MSE_NO_AND_OP2;
 		}
 		else
-			error = exec_cmd(str, len);
+			error = exec_cmd(str->s, str->l, qt);
 	}
 	return (error);
 }
 
-#include <stdio.h>
-
-int	exec_cmd(const char *cmd, size_t len)
+static int	exec_continuation_order(t_string *str, const char *lop, int prev_op,
+				t_qlist *qt)
 {
-	printf("exec: %.*s\n", len, cmd);
-	return (0);
-}
+	int			error;
+	int			tmp_error;
 
-static int	exec_continuation_order(const char *str, size_t len,
-				const char *lop, int is_or)
-{
-	int	error;
-	int	tmp_error;
-
-	error = (str == lop) * (is_or * MSE_NO_OR_OP1 + (!is_or) * MSE_NO_AND_OP1);
+	error = (str->s == lop) * ((*lop == '|') * MSE_NO_OR_OP1
+			+ (*lop == '&') * MSE_NO_AND_OP1);
 	if (!error)
 	{
-		tmp_error = exec_cmd(str, lop - str);
-		if (!is_or && tmp_error)
+		tmp_error = exec_cmd(str->s, lop - str->s, qt);
+		if (*lop == '&' && tmp_error || *lop == '|' && !tmp_error)
 			error = tmp_error;
 		else
-			error = exec_cmd_str(lop + 2, len - (lop - str) - 1,
-					(is_or * MSPO_OR + (!is_or) * MSPO_AND));
+			error = exec_cmd_str(lop + 2, str->l - (lop - str->s) - 1,
+					((*lop == '|') * MSPO_OR + (*lop == '&') * MSPO_AND), qt);
 	}
 	return (error);
 }
 
-static char	*ft_strrnchr(const char *str, char c, size_t len)
+static const char	*ft_strrnchr(const char *str, char c, size_t len)
 {
-	char	*r;
+	const char	*r;
 
 	r = NULL;
 	if (len--)

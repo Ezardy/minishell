@@ -6,7 +6,7 @@
 /*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/28 10:55:29 by mamazari          #+#    #+#             */
-/*   Updated: 2024/05/10 21:06:40 by zanikin          ###   ########.fr       */
+/*   Updated: 2024/05/17 17:12:32 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ int	main(int argc, char **argv, char **envp)
 	char				*str;
 	struct sigaction	sa;
 	int					exit_status;
-
+	t_qlist				*qt;
 
 	sigemptyset(&sa.sa_mask);
 	sa.sa_sigaction = sigact_handler;
@@ -36,11 +36,24 @@ int	main(int argc, char **argv, char **envp)
 	while (1)
 	{
 		str = readline("minishell$ ");
-		if (ft_strlen(str) > 0)
+		if (*str)
+		{
 			add_history(str);
-		exit_status = pipex(str, envp);
+			exit_status = get_all_quotes(str, &qt);
+			if (!exit_status)
+				exit_status = exec_cmd_str(str, ft_strlen(str), MSPO_NONE, qt);
+		}
+		else
+			exit_status = 0;
 		free(str);
 	}
+}
+
+int	exec_cmd(const char *cmd, size_t len, t_qlist *qt)
+{
+	(void)qt;
+	printf("exec: %.*s\n", len, cmd);
+	return (0);
 }
 
 static void	sigact_handler(int signum, siginfo_t *info, void *context)

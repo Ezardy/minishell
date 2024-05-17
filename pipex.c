@@ -6,17 +6,17 @@
 /*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/23 15:21:23 by mamazari          #+#    #+#             */
-/*   Updated: 2024/05/10 19:57:31 by zanikin          ###   ########.fr       */
+/*   Updated: 2024/05/15 19:02:14 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static int	pipe_count(char *str);
+static int	pipe_count(const char *str);
 static int	pipex_exec(t_pipex args, int fd[]);
 static void	do_execve_red(char *strs, char **envp, int file);
 
-int	pipex(const char *str, char **envp)
+int	pipex(const char *str, size_t size, char **envp, t_qlist *qt)
 {
 	t_pipex	args;
 	int		p_count;
@@ -25,7 +25,7 @@ int	pipex(const char *str, char **envp)
 	int		exit_status;
 
 	args.envp = envp;
-	args.argv = my_split(str, "|");
+	args.argv = my_split(str, "|", size, qt);
 	p_count = pipe_count(str);
 	args.p_count = p_count;
 	fd = (int *) malloc(sizeof(int) * (p_count * 2));
@@ -70,7 +70,7 @@ static int	pipex_exec(t_pipex args, int fd[])
 	return (exit_status);
 }
 
-static int	pipe_count(char *str)
+static int	pipe_count(const char *str)
 {
 	int	i;
 	int	c;

@@ -6,11 +6,12 @@
 /*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/11 19:58:01 by zanikin           #+#    #+#             */
-/*   Updated: 2024/05/15 17:14:12 by zanikin          ###   ########.fr       */
+/*   Updated: 2024/05/16 20:01:51 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "command_handler.h"
+#include "libft.h"
 #include <stdlib.h>
 
 static int	fill_quotes(t_quotes *qt, const char *stmp, const char *dtmp);

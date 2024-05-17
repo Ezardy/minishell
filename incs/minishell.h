@@ -6,7 +6,7 @@
 /*   By: zanikin <zanikin@student.42yerevan.am>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 18:44:22 by mamazari          #+#    #+#             */
-/*   Updated: 2024/05/10 19:28:11 by zanikin          ###   ########.fr       */
+/*   Updated: 2024/05/15 19:03:41 by zanikin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,9 @@
 # include <fcntl.h>
 # include <limits.h>
 # include <errno.h>
+# include "command_handler.h"
 
-char	**my_split(char *str, char *charset);
+char	**my_split(const char *str, char *charset, size_t size, t_qlist *qt);
 char	*search_path(char *cmd, char **path);
 char	*get_str(char **strs2, char *cmd);
 void	free_arr(char **av);
@@ -44,6 +45,6 @@ typedef struct s_args
 int		do_execve_first(t_pipex args, int fd[]);
 void	do_execve_fd(t_pipex args, int fd[], int *i, int *j);
 int		do_execve_last(t_pipex args, int fd[], int *i);
-int		pipex(const char *str, char **envp);
+int		pipex(const char *str, size_t size, char **envp, t_qlist *qt);
 
 #endif
